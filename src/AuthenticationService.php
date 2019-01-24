@@ -10,14 +10,21 @@ namespace App {
 
     class AuthenticationService
     {
+        private $profileDao;
+        private $tokenDao;
+
+        public function __construct(IProfileDao $profile = null, ITokenDao $token = null)
+        {
+            $this->tokenDao = $token ?? new RsaTokenDao();
+            $this->profileDao = $profile ?? new ProfileDao();
+        }
+
         public function isValid($account, $password)
         {
             // 根據 account 取得自訂密碼
-            $profileDao = new ProfileDao();
-            $passwordFromDao = $profileDao->getPassword($account);
+            $passwordFromDao = $this->profileDao->getPassword($account);
             // 根據 account 取得 RSA token 目前的亂數
-            $rsaToken = new RsaTokenDao();
-            $randomCode = $rsaToken->getRandom($account);
+            $randomCode = $this->tokenDao->getRandom($account);
 
             var_dump($randomCode);
 
@@ -34,7 +41,7 @@ namespace App {
         }
     }
 
-    class ProfileDao
+    class ProfileDao implements IProfileDao
     {
         public function getPassword($account)
         {
@@ -42,7 +49,7 @@ namespace App {
         }
     }
 
-    class RsaTokenDao
+    class RsaTokenDao implements ITokenDao
     {
         public function getRandom($account)
         {
